@@ -15,17 +15,17 @@ def filter_and_drop_rows(df):
         (df.CompTotal != "NA"))
 
     dropped_df = filtered_df.drop(
-        "ResponseId","MainBranch","Check","CodingActivities","LearnCodeOnline","TechDoc","PurchaseInfluence","BuyNewTool","BuildvsBuy",
-        "TechEndorse","LanguageWantToWorkWith","LanguageAdmired","DatabaseWantToWorkWith","DatabaseAdmired","PlatformWantToWorkWith",
-        "PlatformAdmired","WebframeWantToWorkWith","WebframeAdmired","EmbeddedWantToWorkWith","EmbeddedAdmired","MiscTechWantToWorkWith",
-        "MiscTechAdmired","ToolsTechWantToWorkWith","ToolsTechAdmired","NEWCollabToolsWantToWorkWith","NEWCollabToolsAdmired",
-        "OpSysPersonal use","OfficeStackAsyncWantToWorkWith","OfficeStackAsyncAdmired","OfficeStackSyncWantToWorkWith","OfficeStackSyncAdmired",
+        "ResponseId","MainBranch","Check","CodingActivities","LearnCodeOnline","TechDoc","PurchaseInfluence","BuyNewTool","BuildvsBuy","TechEndorse",
+        "LanguageWantToWorkWith","LanguageAdmired","DatabaseWantToWorkWith","DatabaseAdmired","PlatformWantToWorkWith", "PlatformAdmired",
+        "WebframeWantToWorkWith","WebframeAdmired","EmbeddedWantToWorkWith","EmbeddedAdmired","MiscTechWantToWorkWith", "MiscTechAdmired",
+        "ToolsTechWantToWorkWith","ToolsTechAdmired","NEWCollabToolsWantToWorkWith","NEWCollabToolsAdmired", "OpSysPersonal use","OfficeStackAsyncHaveWorkedWith", 
+        "OfficeStackAsyncWantToWorkWith","OfficeStackAsyncAdmired", "OfficeStackSyncHaveWorkedWith", "OfficeStackSyncWantToWorkWith","OfficeStackSyncAdmired",
         "AISearchDevWantToWorkWith","AISearchDevAdmired","NEWSOSites","SOVisitFreq","SOAccount","SOPartFreq","SOHow","SOComm","AIBen",
         "AINextMuch more integrated", "AINextNo change","AINextMore integrated","AINextLess integrated","AINextMuch less integrated","AIEthics",
         "AIChallenges","TBranch","Knowledge_1","Knowledge_2","Knowledge_3","Knowledge_4","Knowledge_5","Knowledge_6","Knowledge_7","Knowledge_8",
         "Knowledge_9","Frequency_1","Frequency_2","Frequency_3","TimeSearching","TimeAnswering","Frustration","ProfessionalTech","ProfessionalCloud",
         "ProfessionalQuestion","JobSatPoints_1","JobSatPoints_4","JobSatPoints_5","JobSatPoints_6","JobSatPoints_7","JobSatPoints_8",
-        "JobSatPoints_9","JobSatPoints_10","JobSatPoints_11","SurveyLength","SurveyEase","ConvertedCompYearly","JobSat"
+        "JobSatPoints_9","JobSatPoints_10","JobSatPoints_11","SurveyLength","SurveyEase","ConvertedCompYearly","JobSat", 
     )
     return dropped_df
 
@@ -49,17 +49,29 @@ def clean_data(df):
 
     cleaned_df = (
         df
-        .withColumn("Salary_in_USD", 
-                    when( (col("Currency").isNull() | col("CompTotal").isNull()), lit(None))
+        .withColumn("CompTotal(USD)", 
+                    when( ((col("Currency").isNull()) | 
+                            (col("Currency") == "NA") |
+                            (col("CompTotal") == "None") |
+                           (col("CompTotal").isNull())), lit(None))
                     .otherwise(convert_to_usd_udf(col("Currency"), col("CompTotal"))))
-        .withColumn("YearsCode", df["YearsCode"].cast(IntegerType()))
-        .withColumn("WorkExp", df["WorkExp"].cast(IntegerType()))
-        .withColumnRenamed("OpSysProfessional use", "OpSysProfessional_use")
-        .withColumnRenamed("AIToolCurrently Using", "AIToolCurrently_Using")
+        .withColumn("YearsCode", 
+                    when( ((col("YearsCode")=="NA") | (col("YearsCode").isNull())), lit(None))
+                    .otherwise(col("YearsCode").cast(IntegerType())))
+        .withColumn("WorkExp",
+                    when( ((col("WorkExp")=="NA") | (col("WorkExp").isNull())), lit(None))
+                    .otherwise(col("WorkExp").cast(IntegerType())))
+        .withColumnRenamed("NEWCollabToolsHaveWorkedWith", "CollabToolsHaveWorkedWith")
+        .withColumnRenamed("OpSysProfessional use", "OpSysProfessionalUse")
+        .withColumnRenamed("AIToolCurrently Using", "AIToolCurrentlyUsing")
+        .withColumnRenamed("AIToolInterested in Using", "AIToolInterestedUsing")
+        .withColumnRenamed("AIToolNot interested in Using", "AIToolNotInterestedUsing")
+        .withColumnRenamed("PlatformHaveWorkedWith", "CloudHaveWorkedWith")
+        .withColumnRenamed("ToolsTechHaveWorkedWith", "DevToolHaveWorkedWith")
     )
     # filtering after transformation
     cleaned_df = cleaned_df.filter(
-        ~((col("Salary_in_USD").isNull())|(col("Salary_in_USD") == float("inf"))|(col("Salary_in_USD") > float("1E6")))
+        ~((col("CompTotal(USD)").isNull())|(col("CompTotal(USD)") == float("inf"))|(col("CompTotal(USD)") > float("1E6")))
     )
     return cleaned_df
 
@@ -83,7 +95,7 @@ def main(file_path: str):
     df = spark.read.csv(file_path, header=True, inferSchema=True)
     df = filter_and_drop_rows(df)
     df = clean_data(df)
-    df.show()
+    df.write.csv("output_directory", mode="overwrite", header=True)
     to_postgres(df, "developer_survey_2024")
     spark.stop()
 
