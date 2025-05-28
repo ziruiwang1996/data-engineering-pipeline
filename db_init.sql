@@ -1,9 +1,9 @@
-CREATE TABLE LearnCode (
+CREATE TABLE IF NOT EXISTS LearnCode (
     id SERIAL PRIMARY KEY,
-    method TEXT UNIQUE NOT NULL
+    name TEXT UNIQUE NOT NULL
 );
 
-INSERT INTO LearnCode (method) VALUES
+INSERT INTO LearnCode (name) VALUES
     ("Books / Physical media"),
     ("Coding Bootcamp"), 
     ("Colleague"),
@@ -13,7 +13,7 @@ INSERT INTO LearnCode (method) VALUES
     ("Other online resources (e.g., videos, blogs, forum, online community)"), 
     ("School (i.e., University, College, etc)");
 
-CREATE TABLE ProgrammingLanguage (
+CREATE TABLE IF NOT EXISTS ProgrammingLanguage (
     id SERIAL PRIMARY KEY,
     name TEXT UNIQUE NOT NULL
 );
@@ -26,7 +26,7 @@ INSERT INTO ProgrammingLanguage (name) VALUES
     ('Prolog'), ('Python'), ('R'), ('Ruby'), ('Rust'), ('Scala'), ('Solidity'), ('SQL'), ('Swift'), ('TypeScript'), 
     ('VBA'), ('Visual Basic (.Net)'), ('Zephyr'), ('Zig');
 
-CREATE TABLE Database (
+CREATE TABLE IF NOT EXISTS Database (
     id SERIAL PRIMARY KEY,
     name TEXT UNIQUE NOT NULL
 );
@@ -38,7 +38,7 @@ INSERT INTO Database (name) VALUES
     ('Microsoft SQL Server'), ('MongoDB'), ('MySQL'), ('Neo4J'), ('Oracle'), ('PostgreSQL'), ('Presto'), ('RavenDB'),
     ('Redis'), ('Snowflake'), ('Solr'), ('SQLite'), ('Supabase'), ('TiDB');
 
-CREATE TABLE Cloud ( 
+CREATE TABLE IF NOT EXISTS Cloud ( 
     id SERIAL PRIMARY KEY,
     name TEXT UNIQUE NOT NULL
 );
@@ -49,7 +49,7 @@ INSERT INTO Cloud (name) VALUES
     ('Managed Hosting'), ('Microsoft Azure'), ('Netlify'), ('OpenShift'), ('OpenStack'), ('Oracle Cloud Infrastructure (OCI)'), 
     ('OVH'), ('PythonAnywhere'), ('Render'), ('Scaleway'), ('Supabase'), ('Vercel'), ('VMware'), ('Vultr');
 
-CREATE TABLE WebFramework ( 
+CREATE TABLE IF NOT EXISTS WebFramework ( 
     id SERIAL PRIMARY KEY,
     name TEXT UNIQUE NOT NULL
 );
@@ -60,7 +60,7 @@ INSERT INTO WebFramework (name) VALUES
     ('NestJS'), ('Next.js'), ('Node.js'), ('Nuxt.js'), ('Phoenix'), ('Play Framework'), ('React'), ('Remix'), ('Ruby on Rails'), 
     ('Solid.js'), ('Spring Boot'), ('Strapi'), ('Svelte'), ('Symfony'), ('Vue.js'), ('WordPress'), ('Yii 2');
 
-CREATE TABLE EmbeddedSystem (
+CREATE TABLE IF NOT EXISTS EmbeddedSystem (
     id SERIAL PRIMARY KEY,
     name TEXT UNIQUE NOT NULL
 );      
@@ -69,7 +69,7 @@ INSERT INTO EmbeddedSystem (name) VALUES
     ('Arduino'), ('Boost.Test'), ('build2'), ('Catch2'), ('CMake'), ('Cargo'), ('cppunit'), ('CUTE'), ('doctest'), ('GNU GCC'),
     ('LLVM''s Clang'), ('Meson'), ('Micronaut'), ('MSVC'), ('Ninja'), ('PlatformIO'), ('QMake'), ('Rasberry Pi'), ('SCons'), ('ZMK');
 
-CREATE TABLE MiscTech ( 
+CREATE TABLE IF NOT EXISTS MiscTech ( 
     id SERIAL PRIMARY KEY,
     name TEXT UNIQUE NOT NULL
 );
@@ -81,7 +81,7 @@ INSERT INTO MiscTech (name) VALUES
     ('Quarkus'), ('RabbitMQ'), ('React Native'), ('Roslyn'), ('Ruff'), ('Scikit-Learn'), ('Spring Framework'), ('SwiftUI'),
     ('Tauri'), ('TensorFlow'), ('Tidyverse'), ('Torch/PyTorch'), ('Xamarin');
 
-CREATE TABLE DevTool (
+CREATE TABLE IF NOT EXISTS DevTool (
     id SERIAL PRIMARY KEY,
     name TEXT UNIQUE NOT NULL
 );
@@ -92,7 +92,7 @@ INSERT INTO DevTool (name) VALUES
     ('Nix'), ('npm'), ('NuGet'), ('Pacman'), ('Pip'), ('pnpm'), ('Podman'), ('Pulumi'), ('Puppet'), ('Terraform'),
     ('Unity 3D'), ('Unreal Engine'), ('Visual Studio Solution'), ('Vite'), ('Webpack'), ('Yarn');
 
-CREATE TABLE IDE (
+CREATE TABLE IF NOT EXISTS IDE (
     id SERIAL PRIMARY KEY,
     name TEXT UNIQUE NOT NULL
 );  
@@ -104,7 +104,7 @@ INSERT INTO IDE (name) VALUES
     ('RStudio'), ('RubyMine'), ('Spacemacs'), ('Spyder'), ('Sublime Text'), ('Vim'), ('Visual Studio'),
     ('Visual Studio Code'), ('VSCodium'), ('WebStorm'), ('Xcode');
 
-CREATE TABLE OS (
+CREATE TABLE IF NOT EXISTS OS (
     id SERIAL PRIMARY KEY,
     name TEXT UNIQUE NOT NULL
 );
@@ -113,7 +113,7 @@ INSERT INTO OS (name) VALUES
     ('AIX'), ('Android'), ('Arch'), ('BSD'), ('ChromeOS'), ('Cygwin'), ('Debian'), ('Fedora'), ('Haiku'), ('iOS'), ('iPadOS'),
     ('MacOS'), ('Other Linux-based'), ('Red Hat'), ('Solaris'), ('Ubuntu'), ('Windows'), ('Windows Subsystem for Linux (WSL)');
 
-CREATE TABLE AITool (   
+CREATE TABLE IF NOT EXISTS AITool (   
     id SERIAL PRIMARY KEY,
     name TEXT UNIQUE NOT NULL
 );
@@ -123,3 +123,21 @@ INSERT INTO AITool (name) VALUES
     ('Google Gemini'), ('Lightning AI'), ('Meta AI'), ('Metaphor'), ('Neeva AI'), ('OpenAI Codex'), ('Perplexity AI'),
     ('Phind'), ('Quora Poe'), ('Replit Ghostwriter'), ('WolframAlpha'), ('Snyk Code'), ('Tabnine'),
     ('Visual Studio Intellicode'), ('Whispr AI'), ('You.com');
+
+CREATE TABLE IF NOT EXISTS DevWorkflow (
+    id SERIAL PRIMARY KEY,
+    name TEXT UNIQUE NOT NULL
+);
+
+INSERT INTO DevWorkflow (name) VALUES
+    ("Learning about a codebase"),
+    ("Project planning"),
+    ("Writing code"),
+    ("Documenting code"),
+    ("Debugging and getting help"),
+    ("Testing code"),
+    ("Committing and reviewing code"),
+    ("Deployment and monitoring"),
+    ("Predictive analytics"),
+    ("Search for answers"),
+    ("Generating content or syntheticdata");
