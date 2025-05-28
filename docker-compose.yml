@@ -22,8 +22,8 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: mydb
     volumes:
-      - postgres_data:/var/lib/postgresql/data
       - ./db_init.sql:/docker-entrypoint-initdb.d/db_init.sql
+      - postgres_data:/var/lib/postgresql/data
       
   airflow:
     image: apache/airflow:2.7.2
