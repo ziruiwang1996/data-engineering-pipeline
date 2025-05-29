@@ -25,22 +25,57 @@ services:
       - ./db_init.sql:/docker-entrypoint-initdb.d/db_init.sql
       - postgres_data:/var/lib/postgresql/data
       
-  airflow:
-    image: apache/airflow:2.7.2
-    container_name: airflow
+  init-airflow:
+    image: apache/airflow:latest
+    container_name: init-airflow
+    environment:
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/mydb
+    depends_on:
+      - postgres
+      - minio
+    command: >
+      bash -c "airflow db init && 
+               airflow db migrate && 
+               airflow users create --username airflowadmin --password airflowadmin --firstname Admin --lastname User --role Admin --email admin@example.com"
+  airflow_web:
+    build:
+      context: ./airflow
+      dockerfile: Dockerfile
+    container_name: airflow_web
     ports:
       - "8080:8080"
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:postgres@postgres/mydb
-      AIRFLOW__WEBSERVER__WEB_SERVER_PORT: 8080
-      AIRFLOW__WEBSERVER__WORKERS: 4
-      AIRFLOW__WEBSERVER__WORKER_CLASS: sync
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:postgres@postgres/mydb
+      AIRFLOW_CONN_MINIO_DEFAULT: 'aws://minioadmin:minioadmin@minio:9000'
+    volumes:
+      - ./airflow:/opt/airflow
+      - ./pyspark:/opt/pyspark
+      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - minio
       - postgres
+      - init-airflow
+    command: api-server
+  
+  airflow_scheduler:
+    build:
+      context: ./airflow
+      dockerfile: Dockerfile
+    container_name: airflow_scheduler
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:postgres@postgres/mydb
+      AIRFLOW_CONN_MINIO_DEFAULT: 'aws://minioadmin:minioadmin@minio:9000'
     volumes:
-      - ./dags:/usr/local/airflow/dags
+      - ./airflow:/opt/airflow
+      - ./pyspark:/opt/pyspark
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - minio
+      - postgres
+      - init-airflow
+    command: scheduler
 
 volumes:
   minio_data:
