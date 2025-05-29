@@ -4,7 +4,7 @@ from pyspark.sql.types import FloatType, IntegerType
 import requests
 import os
 
-JDBC_URL  = "jdbc:postgresql://postgres:5432/mydb"
+JDBC_URL  = "jdbc:postgresql://postgres:5432/stack-overflow-survey"
 JDBC_OPTS = {"user": "postgres", "password": "postgres", "driver": "org.postgresql.Driver"}
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 JDBC_JAR_PATH = os.path.join(BASE_DIR, "postgresql-42.7.6.jar")

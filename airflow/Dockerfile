@@ -1,3 +1,5 @@
 FROM apache/airflow:latest
 
-RUN pip install apache-airflow-providers-docker
+RUN pip install --no-cache-dir \
+    apache-airflow-providers-docker \
+    apache-airflow-providers-amazon \

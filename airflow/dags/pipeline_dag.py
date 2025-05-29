@@ -1,6 +1,7 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 from airflow import DAG
-from airflow.providers.amazon.aws.sensors.s3_key import S3KeySensor
+from docker.types import Mount
+from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 from airflow.providers.docker.operators.docker import DockerOperator
 
 default_args = {
@@ -13,8 +14,8 @@ default_args = {
 with DAG(
     dag_id="etl",
     default_args=default_args,
-    schedule_interval="@daily",
-    start_date=...,
+    schedule="@daily",
+    start_date=datetime(2025, 5, 28),
     catchup=False,
 ) as dag:
     
@@ -33,7 +34,7 @@ with DAG(
         image="apache/spark-py:latest",
         container_name="pyspark",
         api_version="auto",
-        auto_remove=True,
+        auto_remove="success",
         command=[
             "spark-submit", 
             "--jars", 
@@ -43,10 +44,10 @@ with DAG(
         ],
         docker_url="unix://var/run/docker.sock",
         network_mode="bridge",
-        volumes=[
-            "minio_data:/mnt/minio",  # mount MinIO data for shared access
-            "pyspark:/app",           # map local directory to the container
-        ],
+        mounts=[
+            Mount(source='minio_data', target='/mnt/minio', type='bind'),   # mount MinIO data for shared access
+            Mount(source='pyspark', target='/app', type='bind'),            # map local directory to the container
+        ]
     )
 
     t1 >> t2

@@ -20,23 +20,31 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: mydb
+      POSTGRES_DB: stack-overflow-survey
     volumes:
       - ./db_init.sql:/docker-entrypoint-initdb.d/db_init.sql
       - postgres_data:/var/lib/postgresql/data
+
+  postgres-airflow:
+    image: postgres:latest
+    container_name: postgres-airflow
+    ports:
+      - "5433:5432" 
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
       
   init-airflow:
     image: apache/airflow:latest
     container_name: init-airflow
     environment:
-      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/mydb
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres-airflow/airflow
     depends_on:
-      - postgres
-      - minio
+      - postgres-airflow
     command: >
-      bash -c "airflow db init && 
-               airflow db migrate && 
-               airflow users create --username airflowadmin --password airflowadmin --firstname Admin --lastname User --role Admin --email admin@example.com"
+      bash -c "airflow db migrate"
+
   airflow_web:
     build:
       context: ./airflow
@@ -46,17 +54,26 @@ services:
       - "8080:8080"
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:postgres@postgres/mydb
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres-airflow/airflow
       AIRFLOW_CONN_MINIO_DEFAULT: 'aws://minioadmin:minioadmin@minio:9000'
+      AIRFLOW__CORE__AUTH_MANAGER: airflow.api_fastapi.auth.managers.simple.simple_auth_manager.SimpleAuthManager
+      AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_USERS: "admin:Admin"
+      AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_PASSWORDS_FILE: /opt/airflow/simple_auth_manager_passwords.json.generated
     volumes:
-      - ./airflow:/opt/airflow
+      - ./simple_auth_passwords.json:/opt/airflow/simple_auth_manager_passwords.json.generated
+      - ./airflow/dags:/opt/airflow/dags
       - ./pyspark:/opt/pyspark
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
-      - minio
-      - postgres
       - init-airflow
-    command: api-server
+    command: >
+      bash -c "
+        until airflow db check; do
+          echo 'waiting for airflow metadata DB…' && sleep 5;
+        done &&
+        airflow db migrate &&
+        exec airflow api-server
+      "
   
   airflow_scheduler:
     build:
@@ -65,15 +82,17 @@ services:
     container_name: airflow_scheduler
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:postgres@postgres/mydb
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres-airflow/airflow
       AIRFLOW_CONN_MINIO_DEFAULT: 'aws://minioadmin:minioadmin@minio:9000'
+      AIRFLOW__CORE__AUTH_MANAGER: airflow.api_fastapi.auth.managers.simple.simple_auth_manager.SimpleAuthManager
+      AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_USERS: "admin:Admin"
+      AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_PASSWORDS_FILE: /opt/airflow/simple_auth_manager_passwords.json.generated
     volumes:
-      - ./airflow:/opt/airflow
+      - ./simple_auth_passwords.json:/opt/airflow/simple_auth_manager_passwords.json.generated:ro
+      - ./airflow/dags:/opt/airflow/dags
       - ./pyspark:/opt/pyspark
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
-      - minio
-      - postgres
       - init-airflow
     command: scheduler
 
