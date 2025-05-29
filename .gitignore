@@ -3,4 +3,3 @@ bin/
 include/
 lib/
 pyvenv.cfg
-test.csv

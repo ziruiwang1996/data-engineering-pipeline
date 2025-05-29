@@ -20,15 +20,33 @@ with DAG(
     
     t1 = S3KeySensor(
         task_id="wait_for_raw_csv",
-        bucket_key="raw-data/{{ ds }}/.*\\.csv",
+        bucket_key="raw-data/*.csv",
         bucket_name="raw-data",
         aws_conn_id="minio_default",
         poke_interval=60,
         timeout=60*60,
+        mode="poke"
     )
 
-    t2 = DockerOperator()
+    t2 = DockerOperator(
+        task_id="clean_and_normalize_data",
+        image="apache/spark-py:latest",
+        container_name="pyspark",
+        api_version="auto",
+        auto_remove=True,
+        command=[
+            "spark-submit", 
+            "--jars", 
+            "/app/postgresql-42.7.6.jar", 
+            "/app/clean_and_normalize.py",
+            "/mnt/minio/{{ task_instance.xcom_pull(task_ids='wait_for_raw_csv')}}"
+        ],
+        docker_url="unix://var/run/docker.sock",
+        network_mode="bridge",
+        volumes=[
+            "minio_data:/mnt/minio",  # mount MinIO data for shared access
+            "pyspark:/app",           # map local directory to the container
+        ],
+    )
 
-    t3 = DockerOperator()
-
-    t1 >> t2 >> t3
+    t1 >> t2

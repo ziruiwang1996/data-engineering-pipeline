@@ -37,6 +37,7 @@ services:
       AIRFLOW__WEBSERVER__WORKERS: 4
       AIRFLOW__WEBSERVER__WORKER_CLASS: sync
     depends_on:
+      - minio
       - postgres
     volumes:
       - ./dags:/usr/local/airflow/dags
@@ -44,3 +45,5 @@ services:
 volumes:
   minio_data:
   postgres_data:
+  pyspark:
+    driver: local
