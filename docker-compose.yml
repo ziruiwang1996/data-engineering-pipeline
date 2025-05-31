@@ -65,7 +65,7 @@ services:
       - ./pyspark:/opt/pyspark
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
-      - init-airflow
+      - airflow-init
     command: >
       bash -c "
         until airflow db check; do
@@ -93,7 +93,7 @@ services:
       - ./pyspark:/opt/pyspark
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
-      - init-airflow
+      - airflow-init
     command: scheduler
 
 volumes:
