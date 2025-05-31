@@ -35,9 +35,9 @@ services:
       POSTGRES_PASSWORD: airflow
       POSTGRES_DB: airflow
       
-  init-airflow:
+  airflow-init:
     image: apache/airflow:latest
-    container_name: init-airflow
+    container_name: airflow-init
     environment:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres-airflow/airflow
     depends_on:
@@ -45,11 +45,11 @@ services:
     command: >
       bash -c "airflow db migrate"
 
-  airflow_web:
+  airflow-web:
     build:
       context: ./airflow
       dockerfile: Dockerfile
-    container_name: airflow_web
+    container_name: airflow-web
     ports:
       - "8080:8080"
     environment:
@@ -75,11 +75,11 @@ services:
         exec airflow api-server
       "
   
-  airflow_scheduler:
+  airflow-scheduler:
     build:
       context: ./airflow
       dockerfile: Dockerfile
-    container_name: airflow_scheduler
+    container_name: airflow-scheduler
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres-airflow/airflow
